@@ -1,6 +1,9 @@
 from flask import Flask, render_template, jsonify
+from os import path
+import json
 
 app = Flask(__name__)
+root_path = path.dirname(__file__)
 
 @app.route('/')
 def index():
@@ -15,6 +18,38 @@ def get_generator_text():
     with open('lorem.txt', 'r') as file:
         lorem_text = file.read()
     return jsonify({'generator_text': lorem_text})
+
+@app.route('/get_top_artists')
+def get_top_artists():
+    """
+    read in some data from the file system.
+    """
+    try:
+        with open(root_path + "/top_artists.json") as fp:
+            artists_data = json.load(fp)
+        return jsonify(artists_data)
+    
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get_top_songs')
+def get_top_songs():
+    """
+    read in some data from the file system.
+    """
+    try:
+        with open(root_path + "/top_artist_songs.json") as fp:
+            song_data = json.load(fp)
+        return jsonify(song_data)
+    
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.jinja_env.auto_reload = True
