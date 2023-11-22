@@ -1,26 +1,20 @@
-# from flask import Flask, render_template
-# app = Flask(__name__)
-
-# @app.route("/")
-# def w209():
-#     file="about9.jpg"
-#     return render_template("w209.html",file=file)
-
-# if __name__ == "__main__":
-#     app.run()
-
-
-from flask import Flask, render_template
-# from flask_bootstrap import Bootstrap
-import altair as alt
-import pandas as pd
-import numpy as np
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template('base.html')
+
+@app.route('/get_generator_text')
+def get_generator_text():
+    """
+    read in some data from the file system.
+    """
+
+    with open('lorem.txt', 'r') as file:
+        lorem_text = file.read()
+    return jsonify({'generator_text': lorem_text})
 
 if __name__ == '__main__':
     app.jinja_env.auto_reload = True

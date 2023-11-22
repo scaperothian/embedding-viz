@@ -5,40 +5,54 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
+
     <!-- Custom Bootstrap CSS -->
     <style>
-        .container {
+        .row {
             display: flex;
             justify-content: space-between;
-            padding: 20px;
-        }
-        
-        /* Custom CSS for additional button styling */
-        :root {
-            --button-width: 95%; /* Define the button width as a percentage of the container width */
-            --button-height: 50px; /* Define the button height in pixels */
+            padding: 5%;
         }
 
         .generator-button {
             margin-top: 10px;
             margin-bottom: 10px;
-            font-size: 20px; /* Specify the font size */
-            font-family: 'Arial', sans-serif; /* Specify the font family */
-            width: 200px; /* Use the variable for the width */
+            margin-right: 10px;
+            font-size: 20px;
+            /* Specify the font size */
+            font-family: 'Arial', sans-serif;
+            /* Specify the font family */
+            width: 200px;
+            /* Use the variable for the width */
             /* height: var(--button-height); /* Use the variable for the height */
         }
-        
-        .artist-text {
+
+        .generator-text {
             margin-top: 10px;
             margin-bottom: 10px;
-            font-size: 20px; /* Specify the font size */
-            font-family: 'Arial', sans-serif; /* Specify the font family */
+            font-size: 15px;
+            /* Specify the font size */
+            font-family: 'Arial', sans-serif;
+            /* Specify the font family */
+            width: 300px;
+            /* Use the variable for the width */
+            /* height: var(--button-height); /* Use the variable for the height */
         }
-        
+
+        .column-title {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 25px;
+            /* Specify the font size */
+            font-family: 'Arial', sans-serif;
+            /* Specify the font family */
+            width: 250px;
+            /* Use the variable for the width */
+        }
+
         /* Set the initial visibility of the second and third columns to hidden */
         .hidden {
             display: none;
@@ -49,7 +63,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
@@ -64,39 +78,34 @@
 
 
 <body>
-    
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <button class="btn btn-success btn-block generator-button" onclick="showColumns()">Generate Lyrics</button>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, libero vel cursus tristique.</p>
-            </div>
-    
-            <div class="col-md-4">
-                <div class="hidden" id="SecondColumn">
-                    <p class="artist-text">Five Similar Artists</p>
-                    <p>1. Taylor Swift<br>2. Bob Dylan<br>3. Imagine Dragons<br>4. Incubus<br>5. Beyonce</p>
-                </div>
-            </div>
-    
-            <div class="col-md-4 hidden" id="ThirdColumn">
-                <h2>Column 3</h2>
-                <p>
-                    1. Love Story<br>
-                    2. Shake It Off<br>
-                    3. Blank Space<br>
-                    4. You Belong with Me<br>
-                    5. Bad Blood
-                </p>
-            </div>
+
+    <div class="row">
+        <div class="col-md-4" id="FirstColumn">
+            <button class="btn btn-success btn-block generator-button"
+                onclick="fetchGeneratorText(); showColumns();">Generate Lyrics</button>
+            <p class="generator-text" id="generatorText"></p>
         </div>
 
-    </div>
-    
+        <div class="col-md-4 hidden" id="SecondColumn">
+            <p class="column-title">Five Similar Artists</p>
+            <p> 1. Taylor Swift<br>
+                2. Bob Dylan<br>
+                3. Imagine Dragons<br>
+                4. Incubus<br>
+                5. Beyonce
+            </p>
+        </div>
 
-
-
-    <div>
+        <div class="col-md-4 hidden" id="ThirdColumn">
+            <p class="column-title">Top 5 Songs</p>
+            <p>
+                1. Love Story<br>
+                2. Shake It Off<br>
+                3. Blank Space<br>
+                4. You Belong with Me<br>
+                5. Bad Blood
+            </p>
+        </div>
     </div>
 
     <script>
@@ -104,6 +113,17 @@
             // Remove the 'hidden' class to display the second and third columns
             document.getElementById('SecondColumn').classList.remove('hidden');
             document.getElementById('ThirdColumn').classList.remove('hidden');
+        }
+
+        function fetchGeneratorText() {
+            // Make an asynchronous request to the Flask server to fetch "lorem.txt" content
+            fetch('/get_generator_text')
+                .then(response => response.json())
+                .then(data => {
+                    // Set the fetched content in the 'loremText' element
+                    document.getElementById('generatorText').innerText = data.generator_text;
+                })
+                .catch(error => console.error('Error:', error));
         }
     </script>
 </body>
