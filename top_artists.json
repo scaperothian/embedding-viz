@@ -1,0 +1,19 @@
+{
+  "artists": [
+    {
+      "artist_name": "Taylor Swift"
+    },
+    {
+      "artist_name": "Bob Dylan"
+    },
+    {
+      "artist_name": "Imagine Dragons"
+    },
+    {
+      "artist_name": "Incubus"
+    },
+    {
+      "artist_name": "Beyonce"
+    }
+  ]
+}
