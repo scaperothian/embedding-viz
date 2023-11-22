@@ -82,51 +82,78 @@
     <div class="row">
         <div class="col-md-4" id="FirstColumn">
             <button class="btn btn-success btn-block generator-button"
-                onclick="fetchGeneratorText(); showColumns();">Generate Lyrics</button>
+                onclick="fetchGeneratorText(); createTopFiveArtistText(); createTopFiveSongsText(); showColumns();">Generate Lyrics</button>
             <p class="generator-text" id="generatorText"></p>
         </div>
 
         <div class="col-md-4 hidden" id="SecondColumn">
-            <p class="column-title">Five Similar Artists</p>
-            <p> 1. Taylor Swift<br>
-                2. Bob Dylan<br>
-                3. Imagine Dragons<br>
-                4. Incubus<br>
-                5. Beyonce
-            </p>
+            <p class="column-title">Top 5 Most Similar Artists</p>
+            <p id="artistsText"></p>
         </div>
 
         <div class="col-md-4 hidden" id="ThirdColumn">
-            <p class="column-title">Top 5 Songs</p>
-            <p>
-                1. Love Story<br>
-                2. Shake It Off<br>
-                3. Blank Space<br>
-                4. You Belong with Me<br>
-                5. Bad Blood
-            </p>
+            <p class="column-title" id="songsTextTitle"></p>
+            <p id="songsText"></p>
         </div>
     </div>
 
     <script>
+
+
+        function fetchGeneratorText() {
+            // Make an asynchronous request to the Flask server to fetch content
+            fetch('/get_generator_text')
+                .then(response => response.json())
+                .then(data => {
+                    // Set the fetched content in the 'generatorText' element
+                    document.getElementById('generatorText').innerText = data.generator_text;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function createTopFiveArtistText() {
+            // Make an asynchronous request to the Flask server to fetch content
+            fetch('/get_top_artists')
+                .then(response => response.json())
+                .then(data => {
+
+                    // Use map to extract values and join them with new lines
+                    const concatenatedString = data.artists.map(d => d.artist_name).join('\n');
+
+                    // Set the concatenated string in the desired element
+                    //console.log(concatenatedString);
+
+                    document.getElementById('artistsText').innerText = concatenatedString;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function createTopFiveSongsText() {
+            // Make an asynchronous request to the Flask server to fetch content
+            fetch('/get_top_songs')
+                .then(response => response.json())
+                .then(data => {
+
+                    // Use map to extract values and join them with new lines
+                    const concatenatedString = data.songs.map(d => d.artist_song).join('\n');
+
+                    // Set the concatenated string in the desired element
+                    //console.log(concatenatedString);
+                    const title = "Most Similar to These " + data.artist_name + " Songs"
+                    document.getElementById('songsTextTitle').innerText = title;
+                    document.getElementById('songsText').innerText = concatenatedString;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
         function showColumns() {
             // Remove the 'hidden' class to display the second and third columns
             document.getElementById('SecondColumn').classList.remove('hidden');
             document.getElementById('ThirdColumn').classList.remove('hidden');
         }
-
-        function fetchGeneratorText() {
-            // Make an asynchronous request to the Flask server to fetch "lorem.txt" content
-            fetch('/get_generator_text')
-                .then(response => response.json())
-                .then(data => {
-                    // Set the fetched content in the 'loremText' element
-                    document.getElementById('generatorText').innerText = data.generator_text;
-                })
-                .catch(error => console.error('Error:', error));
-        }
     </script>
 </body>
+
 {% endblock %}
 
 </html>
