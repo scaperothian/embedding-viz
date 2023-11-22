@@ -28,8 +28,8 @@
             margin-bottom: 10px;
             font-size: 20px; /* Specify the font size */
             font-family: 'Arial', sans-serif; /* Specify the font family */
-            width: var(--button-width); /* Use the variable for the width */
-            height: var(--button-height); /* Use the variable for the height */
+            width: 200px; /* Use the variable for the width */
+            /* height: var(--button-height); /* Use the variable for the height */
         }
         
         .artist-text {
@@ -50,17 +50,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+
 
 
     <title>Embedding Dashboard</title>
 </head>
 
+{% block content %}
 
 
 <body>
     
-
-
     <div class="container">
         <div class="row">
             <div class="col-md-4">
@@ -68,9 +72,11 @@
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, libero vel cursus tristique.</p>
             </div>
     
-            <div class="col-md-4  hidden" id="SecondColumn"">
-                <p class="artist-text">Five Similar Artists</p>
-                <p>1. Taylor Swift<br>2. Bob Dylan<br>3. Imagine Dragons<br>4. Incubus<br>5. Beyonce</p>
+            <div class="col-md-4">
+                <div class="hidden" id="SecondColumn">
+                    <p class="artist-text">Five Similar Artists</p>
+                    <p>1. Taylor Swift<br>2. Bob Dylan<br>3. Imagine Dragons<br>4. Incubus<br>5. Beyonce</p>
+                </div>
             </div>
     
             <div class="col-md-4 hidden" id="ThirdColumn">
@@ -84,26 +90,23 @@
                 </p>
             </div>
         </div>
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    
-        <script>
-            function showColumns() {
-                // Remove the 'hidden' class to display the second and third columns
-                document.getElementById('secondColumn').classList.remove('hidden');
-                document.getElementById('thirdColumn').classList.remove('hidden');
-            }
-        </script>
+
     </div>
     
 
 
 
     <div>
-        {% block content %}
-        {% endblock %}
     </div>
+
+    <script>
+        function showColumns() {
+            // Remove the 'hidden' class to display the second and third columns
+            document.getElementById('SecondColumn').classList.remove('hidden');
+            document.getElementById('ThirdColumn').classList.remove('hidden');
+        }
+    </script>
 </body>
+{% endblock %}
 
 </html>
