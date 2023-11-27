@@ -1,0 +1,6 @@
+name: flask-embeddings
+channels:
+  - defaults
+dependencies:
+  - python=3.10
+prefix: /opt/homebrew/anaconda3/envs/flask-embeddings
