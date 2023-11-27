@@ -1,9 +1,20 @@
 from flask import Flask, render_template, jsonify
 from os import path
 import json
+import pickle 
 
 app = Flask(__name__)
 root_path = path.dirname(__file__)
+
+import embeddings.TextEmbedding as TextEmbedding
+
+file = "podcast_show_description_embeddings.pkl"
+with open(file, 'rb') as f:
+    showemb = pickle.load(f)
+
+emb = TextEmbedding()
+emb.load(showemb)
+
 
 @app.route('/')
 def index():
@@ -24,11 +35,14 @@ def get_top_artists():
     """
     read in some data from the file system.
     """
+    rsp = get_generator_text()
+    query = rsp.json['generator_text']
+    query_emb = emb.encoder(query)
     try:
         with open(root_path + "/top_artists.json") as fp:
             artists_data = json.load(fp)
         return jsonify(artists_data)
-    
+     
     except FileNotFoundError:
         return jsonify({'error': 'File not found'}), 404
     
