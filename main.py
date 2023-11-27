@@ -64,7 +64,10 @@ def get_top_artists():
     """
     rsp = get_generator_text()
     query = rsp.json['generator_text']
-    query_emb = emb.encoder(query)
+    emb.compare(query)
+    import pprint
+    val = emb.get_top_n_scores(n=5)
+
     try:
         with open(root_path + "/top_artists.json") as fp:
             artists_data = json.load(fp)
