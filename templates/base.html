@@ -88,6 +88,9 @@
             <input type="text" id="showDescription" class="form-control"
             style="width: 200px; border: 1px solid black;"
             placeholder="Type your description...">
+            <button class="btn btn-success btn-block generator-button"
+            onclick="fetchGeneratorText(); createTopFiveArtistText(); createTopFiveSongsText(); showColumns();">Enter</button>
+        <p class="generator-text" id="generatorText"></p>
         </div>
 
         <div class="col-md-4 hidden" id="SecondColumn">
