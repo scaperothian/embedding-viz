@@ -126,7 +126,7 @@
                 .then(data => {
 
                     // Use map to extract values and join them with new lines
-                    const concatenatedString = data.artists.map(d => d.artist_name).join('\n');
+                    const concatenatedString = data.map(d => d.label).join('\n');
 
                     // Set the concatenated string in the desired element
                     //console.log(concatenatedString);

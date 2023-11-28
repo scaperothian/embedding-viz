@@ -67,7 +67,8 @@ def get_top_artists():
     emb.compare(query)
     import pprint
     val = emb.get_top_n_scores(n=5)
-
+    return jsonify(val)
+    """
     try:
         with open(root_path + "/top_artists.json") as fp:
             artists_data = json.load(fp)
@@ -78,7 +79,8 @@ def get_top_artists():
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    """
+        
 @app.route('/get_top_songs')
 def get_top_songs():
     """
