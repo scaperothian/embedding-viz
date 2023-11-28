@@ -37,7 +37,7 @@
             /* Specify the font size */
             font-family: 'Arial', sans-serif;
             /* Specify the font family */
-            width: 300px;
+            width: 600px;
             /* Use the variable for the width */
             /* height: var(--button-height); /* Use the variable for the height */
         }
@@ -91,18 +91,21 @@
             
             <button class="btn btn-success btn-block generator-button"
             onclick="fetchGeneratorText(); createTopFiveArtistText(); createTopFiveSongsText(); showColumns();">Enter</button>
-            <p class="generator-text" id="generatorText"></p>-->
+            <p class="generator-text" id="generatorText"></p>
+            -->
         </div>
 
         <div class="col-md-4 hidden" id="SecondColumn">
             <p class="column-title">Top 5 Most Similar Artists</p>
             <p id="artistsText"></p>
         </div>
-
+        
+        <!--
         <div class="col-md-4 hidden" id="ThirdColumn">
             <p class="column-title" id="songsTextTitle"></p>
             <p id="songsText"></p>
         </div>
+        -->
     </div>
 
     <script>
