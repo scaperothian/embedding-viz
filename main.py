@@ -3,29 +3,34 @@ from os import path
 import json
 import pickle 
 import pandas as pd
+import logging
 
 app = Flask(__name__)
 root_path = path.dirname(__file__)
 
+# Configure the Flask app logger
+app.logger.setLevel(logging.DEBUG)
+app.logger.addHandler(logging.StreamHandler())
+
 from embeddings import TextEmbeddings,download
 
-file = "podcast_show_description_embeddings.20231126.pkl"
-filename = 'metadata_with_episode_dates_and_category.tsv'
+embeddings_file = "podcast_show_description_embeddings.20231126.pkl"
+data_file = 'metadata_with_episode_dates_and_category.tsv'
 data_key='show_description'
 label_key='show_name'
     
 try: 
-    df = pd.read_csv(filename,sep='\t')
+    df = pd.read_csv(data_file,sep='\t')
 except Exception as e1:
 #print(e)
     try: 
-        print("Attempt to pull from Google Drive")
+        print("Attempt to pull Data File from Google Drive")
         id = "1guz7ILFUGLN2aYoXUez-K5ZCw0Xjo6m4"
-        download(id,filename)
-        df = pd.read_csv(filename,sep='\t')
+        download(id,data_file)
+        df = pd.read_csv(data_file,sep='\t')
     except Exception as e2:
-        print("Fetch to Google Drive failed to download file.")
-        print(e1, e2)
+        app.logger.debug("Fetch to Google Drive for Data File failed to download file.")
+        app.logger.debug(e1, e2)
         exit()
 
 # clean the data
@@ -40,7 +45,18 @@ df_shows = df.drop_duplicates(['show_name','show_description'])[['show_name','sh
 
 
 emb = TextEmbeddings()
-emb.load(file, df_shows)
+try: 
+    emb.load(embeddings_file, df_shows)
+except Exception as e1:
+    try: 
+        print("Attempt to pull Embeddings File from Google Drive")
+        id = "1TNsMh9jvuTXU2xOWs0LE8FGJ-U7w9WDU"
+        download(id,embeddings_file)
+        emb.load(embeddings_file, df_shows)
+    except Exception as e2:
+        app.logger.debug("Fetch to Google Drive for Embeddings File failed to download file.")
+        app.logger.debug(e1, e2)
+        exit()
 
 
 @app.route('/')
