@@ -17,7 +17,7 @@
             padding: 5%;
         }
 
-        .generator-button {
+        .input-button {
             margin-top: 10px;
             margin-bottom: 10px;
             margin-right: 10px;
@@ -30,7 +30,7 @@
             /* height: var(--button-height); /* Use the variable for the height */
         }
 
-        .generator-text {
+        .input-text {
             margin-top: 10px;
             margin-bottom: 10px;
             font-size: 15px;
@@ -81,50 +81,36 @@
 
     <div class="row">
         <div class="col-md-4" id="FirstColumn">
-            <button class="btn btn-success btn-block generator-button"
-                onclick="fetchGeneratorText(); createTopFiveArtistText(); createTopFiveSongsText(); showColumns();">Start</button>
-            <p class="generator-text" id="generatorText"></p>
-            <!-- 
-            <input type="text" id="showDescription" class="form-control"
-            style="width: 200px; border: 1px solid black;"
-            placeholder="Type your description...">
-            
-            <button class="btn btn-success btn-block generator-button"
-            onclick="fetchGeneratorText(); createTopFiveArtistText(); createTopFiveSongsText(); showColumns();">Enter</button>
-            <p class="generator-text" id="generatorText"></p>
-            -->
+            <button class="btn btn-success btn-block input-button"
+                onclick="fetchInputText(); createTopFiveText(); showColumns();">Start</button>
+            <p class="input-text" id="inputText"></p>
+
         </div>
 
         <div class="col-md-4 hidden" id="SecondColumn">
             <p class="column-title">Top 5 Most Similar Podcast Shows</p>
-            <p id="artistsText"></p>
+            <p id="dataText"></p>
         </div>
         
-        <!--
-        <div class="col-md-4 hidden" id="ThirdColumn">
-            <p class="column-title" id="songsTextTitle"></p>
-            <p id="songsText"></p>
-        </div>
-        -->
     </div>
 
     <script>
 
 
-        function fetchGeneratorText() {
+        function fetchInputText() {
             // Make an asynchronous request to the Flask server to fetch content
-            fetch('/get_generator_text')
+            fetch('/get_input_text')
                 .then(response => response.json())
                 .then(data => {
                     // Set the fetched content in the 'generatorText' element
-                    document.getElementById('generatorText').innerText = data.generator_text;
+                    document.getElementById('inputText').innerText = data.input_text;
                 })
                 .catch(error => console.error('Error:', error));
         }
 
-        function createTopFiveArtistText() {
+        function createTopFiveText() {
             // Make an asynchronous request to the Flask server to fetch content
-            fetch('/get_top_artists')
+            fetch('/get_top_scores')
                 .then(response => response.json())
                 .then(data => {
 
@@ -134,25 +120,7 @@
                     // Set the concatenated string in the desired element
                     //console.log(concatenatedString);
 
-                    document.getElementById('artistsText').innerText = concatenatedString;
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function createTopFiveSongsText() {
-            // Make an asynchronous request to the Flask server to fetch content
-            fetch('/get_top_songs')
-                .then(response => response.json())
-                .then(data => {
-
-                    // Use map to extract values and join them with new lines
-                    const concatenatedString = data.songs.map(d => d.artist_song).join('\n');
-
-                    // Set the concatenated string in the desired element
-                    //console.log(concatenatedString);
-                    const title = "Most Similar to These " + data.artist_name + " Songs"
-                    document.getElementById('songsTextTitle').innerText = title;
-                    document.getElementById('songsText').innerText = concatenatedString;
+                    document.getElementById('dataText').innerText = concatenatedString;
                 })
                 .catch(error => console.error('Error:', error));
         }

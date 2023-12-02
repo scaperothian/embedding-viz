@@ -47,55 +47,26 @@ emb.load(file, df_shows)
 def index():
     return render_template('base.html')
 
-@app.route('/get_generator_text')
-def get_generator_text():
+@app.route('/get_input_text')
+def get_input_text():
     """
     read in some data from the file system.
     """
 
-    with open('lorem.txt', 'r') as file:
-        lorem_text = file.read()
-    return jsonify({'generator_text': lorem_text})
+    with open('input.txt', 'r') as file:
+        input_text = file.read()
+    return jsonify({'input_text': input_text})
 
-@app.route('/get_top_artists')
-def get_top_artists():
+@app.route('/get_top_scores')
+def get_top_scores():
     """
     read in some data from the file system.
     """
-    rsp = get_generator_text()
-    query = rsp.json['generator_text']
+    rsp = get_input_text()
+    query = rsp.json['input_text']
     emb.compare(query)
-    import pprint
     val = emb.get_top_n_scores(n=5)
     return jsonify(val)
-    """
-    try:
-        with open(root_path + "/top_artists.json") as fp:
-            artists_data = json.load(fp)
-        return jsonify(artists_data)
-     
-    except FileNotFoundError:
-        return jsonify({'error': 'File not found'}), 404
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-    """
-        
-@app.route('/get_top_songs')
-def get_top_songs():
-    """
-    read in some data from the file system.
-    """
-    try:
-        with open(root_path + "/top_artist_songs.json") as fp:
-            song_data = json.load(fp)
-        return jsonify(song_data)
-    
-    except FileNotFoundError:
-        return jsonify({'error': 'File not found'}), 404
-    
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.jinja_env.auto_reload = True
