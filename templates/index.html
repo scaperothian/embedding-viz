@@ -3,147 +3,86 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-    <!-- Custom Bootstrap CSS -->
+    <title>Find Similar Strings</title>
     <style>
-        .row {
+        h1 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            padding: 20px;
+        }
+
+        form {
+            text-align: center;
+        }
+
+        .flex-container {
             display: flex;
-            justify-content: space-between;
-            padding-right: 5%;
-            padding-left: 5%;
+            flex-direction: column;
+            align-items: center;
+            /* Center the button horizontally */
         }
 
-        .page-title {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 25px;
-            /* Specify the font size */
-            font-family: 'Arial', sans-serif;
-            padding-right: 5%;
-            padding-left: 5%;
-            padding-bottom: 10px;
-        }
-
-        .input-button {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            margin-right: 10px;
-            font-size: 20px;
-            /* Specify the font size */
-            font-family: 'Arial', sans-serif;
-            /* Specify the font family */
-            width: 200px;
-            /* Use the variable for the width */
-            /* height: var(--button-height); /* Use the variable for the height */
-        }
-
-        .input-text {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 15px;
-            /* Specify the font size */
-            font-family: 'Arial', sans-serif;
-            /* Specify the font family */
+        textarea {
             width: 500px;
-            /* Use the variable for the width */
-            /* height: var(--button-height); /* Use the variable for the height */
+            /* Set the desired width for the textarea */
+            height: 150px;
+            /* Adjust the height to show 5 rows */
+            padding: 10px;
+            margin: 10px;
+            box-sizing: border-box;
+            resize: none;
+            /* Disable textarea resizing */
         }
 
-        .column-title {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-size: 25px;
-            /* Specify the font size */
-            font-family: 'Arial', sans-serif;
-            /* Specify the font family */
-            width: 250px;
-            /* Use the variable for the width */
+        .tiles {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
         }
 
-        /* Set the initial visibility of the second and third columns to hidden */
-        .hidden {
-            display: none;
+        .tile {
+            flex: 0 0 200px;
+            height: 100px;
+            text-align: center;
+            background-color: #ddd;
+            border: 1px solid black;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+        }
+
+        .tile-text {
+            font-family: 'Arial';
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
         }
     </style>
-
-    <!-- Optional Bootstrap jQuery and JS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-
-
-
-
-    <title>Embedding Dashboard</title>
 </head>
 
 <body>
-    <h2 class="page-title">Push Start to Search for Similar Podcasts</h2>
-
-
-    <div class="row">
-        <div class="col-md-6" id="FirstColumn">
-            <button class="btn btn-success btn-block input-button"
-                onclick="fetchInputText(); createTopFiveText(); showColumns();">Start</button>
-            <p class="input-text-title hidden" id="inputTextTitle">Text Input (modify input.txt to change):</p>
-            <p class="input-text" id="inputText"></p>
-
+    <h1>Find Similar Strings</h1>
+    <form action="/" method="POST">
+        <div class="flex-container">
+            <textarea name="input_text" rows="5" placeholder="Enter your text"></textarea>
+            <button type="submit">Find Similar</button>
         </div>
-
-        <div class="col-md-6 hidden" id="SecondColumn">
-            <p class="column-title">Top 5 Most Similar Podcast Shows</p>
-            <p id="dataText"></p>
+    </form>
+    {% if similar_strings %}
+    <div class="tiles">
+        {% for item in similar_strings %}
+        <div class="tile">
+            <div class="tile-text">{{ item }}</div>
         </div>
-        
+        {% endfor %}
     </div>
-
-    <script>
-
-
-        function fetchInputText() {
-            // Make an asynchronous request to the Flask server to fetch content
-            fetch('/get_input_text')
-                .then(response => response.json())
-                .then(data => {
-                    // Set the fetched content in the 'generatorText' element
-                    document.getElementById('inputText').innerText = data.input_text;
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function createTopFiveText() {
-            // Make an asynchronous request to the Flask server to fetch content
-            fetch('/get_top_scores')
-                .then(response => response.json())
-                .then(data => {
-
-                    // Use map to extract values and join them with new lines
-                    const concatenatedString = data.map(d => d.label+" "+"(score: "+parseFloat(d.score).toFixed(2)+")\n\n"+d.data+"\n\n\n").join('\n');
-
-                    // Set the concatenated string in the desired element
-                    //console.log(concatenatedString);
-
-                    document.getElementById('dataText').innerText = concatenatedString;
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        function showColumns() {
-            // Remove the 'hidden' class to display the second and third columns
-            document.getElementById('inputTextTitle').classList.remove('hidden');
-            document.getElementById('SecondColumn').classList.remove('hidden');
-            document.getElementById('inputText').classList.add('col-md-12')
-        }
-    </script>
+    {% endif %}
 </body>
 
 </html>
