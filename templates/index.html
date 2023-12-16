@@ -9,15 +9,21 @@
         h1 {
             text-align: center;
             padding: 20px;
+            color: black
         }
 
         h2 {
+            align-items: center;
             text-align: center;
-            padding: 20px;
+            /* Adjust the height to show 5 rows */
+            padding: 10px;
+            margin: 10px;
+            color: black
         }
 
         form {
             text-align: center;
+
         }
 
         .flex-container {
@@ -25,6 +31,11 @@
             flex-direction: column;
             align-items: center;
             /* Center the button horizontally */
+        }
+
+        button {
+            background-color: lightgrey;
+            color: black;
         }
 
         textarea {
@@ -35,8 +46,22 @@
             padding: 10px;
             margin: 10px;
             box-sizing: border-box;
+            background-color: black;
+            color: white;
             resize: none;
             /* Disable textarea resizing */
+        }
+
+        .user-input {
+            text-align: left;
+            width: 480px;
+            /* Set the desired width for the textarea */
+            height: 150px;
+            /* Adjust the height to show 5 rows */
+            padding: 10px;
+            margin: auto;
+            background-color: rgb(45, 40, 40);
+            color:white;
         }
 
         .tiles {
@@ -50,8 +75,9 @@
             flex: 0 0 200px;
             height: 100px;
             text-align: center;
-            background-color: #ddd;
-            border: 1px solid black;
+            background-color: black;
+            color:grey;
+            border: 1px solid white;
             border-radius: 10px;
             padding: 20px;
             margin: 10px;
@@ -60,21 +86,28 @@
         .tile-text {
             font-family: 'Arial';
             font-size: 18px;
-            font-weight: bold;
             text-align: left;
         }
     </style>
 </head>
 
-<body>
-    <h1>Find Similar Strings</h1>
+<body style="background-color: white;">
     <form action="/" method="POST">
         <div class="flex-container">
-            <textarea name="input_text" rows="5" placeholder="Enter your text"></textarea>
-            <button type="submit">Find Similar</button>
+            <textarea name="input_text" rows="5" placeholder="Enter your Podcast show idea"></textarea>
+            <button type="submit">Search for Similar Ideas</button>
         </div>
     </form>
+
+    {% if user_input %}
+    <h2>Your Idea:</h2>
+    <div>
+        <p class="user-input">{{ user_input }}</p>
+    </div>
+    {% endif %}
+
     {% if similar_strings %}
+    <h2>Results:</h2>
     <div class="tiles">
         {% for item in similar_strings %}
         <div class="tile">
@@ -83,6 +116,12 @@
         {% endfor %}
     </div>
     {% endif %}
+    <script>
+        function showText() {
+            var obj = document.getElementsByName('input_text')
+            console.log(obj)
+        }
+    </script>
 </body>
 
 </html>
