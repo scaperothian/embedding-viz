@@ -61,8 +61,8 @@
             padding: 10px;
             margin: auto;
             background-color: rgb(45, 40, 40);
-            color:white;
-            overflow:scroll;
+            color: white;
+            overflow: scroll;
 
         }
 
@@ -74,11 +74,10 @@
         }
 
         .tile {
-            flex: 0 0 200px;
+            flex: 0 0 400px;
             height: 100px;
             text-align: center;
             background-color: black;
-            color:grey;
             border: 1px solid white;
             border-radius: 10px;
             padding: 20px;
@@ -89,6 +88,14 @@
             font-family: 'Arial';
             font-size: 18px;
             text-align: left;
+            color: white;
+        }
+        
+        .tile-text-details {
+            font-family: 'Arial';
+            font-size: 12px;
+            text-align: left;
+            color: grey;
         }
     </style>
 </head>
@@ -108,12 +115,13 @@
     </div>
     {% endif %}
 
-    {% if similar_strings %}
+    {% if similar_strings|length != 0 %}
     <h2>Results:</h2>
     <div class="tiles">
         {% for item in similar_strings %}
         <div class="tile">
-            <div class="tile-text">{{ item }}</div>
+            <div class="tile-text">{{ item[0] }}</div>
+            <div class="tile-text-details">{{ item[1] }}</div>
         </div>
         {% endfor %}
     </div>
