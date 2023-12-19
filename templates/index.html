@@ -97,35 +97,97 @@
             text-align: left;
             color: grey;
         }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding-right: 5%;
+            padding-left: 5%;
+            padding-bottom: 0px;
+            padding-top: 0px;
+        }
+
+        .footer {
+            background-color: black;
+            color: white;
+        }
+
+        .school-logo {
+            margin-bottom: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .name-text {
+            font-family: 'Arial';
+            font-size: 15px;
+            text-align: center;
+            margin-top: 0px;
+            margin-bottom: 0px
+        }
+        
+        .email-text {
+            font-family: 'Arial';
+            font-size: 10px;
+            text-align: center;
+            margin-top: 0px;
+            margin-bottom: 20px;
+        }
+
+        footer.container-fluid {
+            margin-top: 1000px;
+            /* Use the desired spacing in pixels */
+        }
     </style>
 </head>
 
-<body style="background-color: white;">
-    <form action="/" method="POST">
-        <div class="flex-container">
-            <textarea name="input_text" rows="5" placeholder="Enter your Podcast show idea"></textarea>
-            <button type="submit">Search for Similar Ideas</button>
-        </div>
-    </form>
-
-    {% if user_input %}
-    <h2>Your Idea:</h2>
+<body style="background-color: white; margin:0px">
     <div>
-        <p class="user-input">{{ user_input }}</p>
-    </div>
-    {% endif %}
+        <form action="/" method="POST">
+            <div class="flex-container">
+                <textarea name="input_text" rows="5" placeholder="Enter your Podcast show idea"></textarea>
+                <button type="submit">Search for Similar Ideas</button>
+            </div>
+        </form>
 
-    {% if similar_strings|length != 0 %}
-    <h2>Results:</h2>
-    <div class="tiles">
-        {% for item in similar_strings %}
-        <div class="tile">
-            <div class="tile-text">{{ item[0] }}</div>
-            <div class="tile-text-details">{{ item[1] }}</div>
+        {% if user_input %}
+        <h2>Your Idea:</h2>
+        <div>
+            <p class="user-input">{{ user_input }}</p>
         </div>
-        {% endfor %}
+        {% endif %}
+
+        {% if similar_strings|length != 0 %}
+        <h2>Results:</h2>
+        <div class="tiles">
+            {% for item in similar_strings %}
+            <div class="tile">
+                <div class="tile-text">{{ item[0] }}</div>
+                <div class="tile-text-details">{{ item[1] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
+    <!-- Footer -->
+    <footer class="container-fluid text-center footer">
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-9 school-logo">
+                <img src="{{url_for('static', filename='berkeleyischool-logo-alternate-white-lg.png')}}" alt="Berkeley"
+                    width="25%" height="auto">
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-3">
+                <p class="name-text">Created by: David Scaperoth </p>
+                <p class="email-text">scaperoth [at] ischool.berkeley.edu</p>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+    </footer>
 </body>
 
 </html>
