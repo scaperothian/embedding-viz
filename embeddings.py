@@ -6,15 +6,21 @@ import pprint
 import subprocess
 import requests
 import sys
+import argparse
+import yaml
 
-import tensorflow as tf
 import pandas as pd
 import numpy as np
 
-from transformers import AutoTokenizer, TFAutoModel
+import torch
+from transformers import AutoTokenizer, AutoModel
+import torch.nn.functional as F
 
 def download(id,filename):
     """
+    Download pkl file from Google Drive.  Nice to use for getting models 
+    or embeddings.
+    
     the file we are pulling is too big, so Google requires you to accept 
     the conditions of a download warning where scanning is not possible.
     """
@@ -60,21 +66,35 @@ class TextEmbeddings:
         
         if not encoder:
             # Load model from HuggingFace Hub
-            self._default_tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/multi-qa-MiniLM-L6-cos-v1")
-            self._default_model = TFAutoModel.from_pretrained("sentence-transformers/multi-qa-MiniLM-L6-cos-v1")
+            self._default_tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L12-v2')
+            self._default_model = AutoModel.from_pretrained('sentence-transformers/all-MiniLM-L12-v2')
             self.encoder = self._default_encoder
         else:
             self.encoder = encoder
         
-    def create_embeddings(self, df, data_key, label_key, block_size=1, filename=None):
-        self.data_frame = df
+    def create_embeddings(self, input_filename, block_size=10, print_label="Artist"):
+
+        # assumes a yaml file input
+        output_filename = input_filename[:-5] + "_embeddings.pkl"
+        
+        # To Create Embeddings, you need data and you need create a dataframe of the data you want to parse....
+        # Load the YAML file
+        with open(input_filename, "r") as yaml_file:
+            lyrics = yaml.safe_load(yaml_file) 
+
+        df_input = pd.DataFrame(lyrics).reset_index()
+        label_key = "songs"
+        data_key = "song_lyrics"
+        df_input.columns = ['songs','song_lyrics']
+        
+        self.data_frame = df_input
         self.data_key = data_key
         self.label_key = label_key            
         self.block_size = block_size
 
-        self._saveEmbeddingChunks()
+        self._saveEmbeddingChunks(print_label=print_label)
         self._combineEmbeddingChunks()
-        self._saveCombinedEmbedding(filename=filename)
+        self._saveCombinedEmbedding(filename=output_filename)
         self._cleanup()
 
     def add_data_frame(self, df):
@@ -94,61 +114,79 @@ class TextEmbeddings:
         if data_frame is not None:
             self.data_frame = data_frame
     
-    def compare(self,query,n=5,verbose=False):
+    def compare(self,query,n=5):
         queryemb = self.encoder(query)
         
-        dataemb = tf.constant(self.embedding_matrix,dtype="float32")
+        dataemb = torch.tensor(self.embedding_matrix)
         #Compute dot score between query and all document embeddings
-        self.scores = (queryemb @ tf.transpose(dataemb))[0].numpy().tolist()
+        self.scores = torch.matmul(queryemb, dataemb.t()).tolist()[0]
+        return self.scores
     
     def get_top_n_scores(self,n=5,verbose=False):
 
-        df = self.data_frame
-            
-        sorted_indices = np.argsort(self.scores)[::-1]
-        lst = []
-        
-        for i in sorted_indices[:n]:
-            label = self.embedding_labels[i]
-            score = self.scores[i]
-            data = df[df[self.label_key]==self.embedding_labels[i]][self.data_key].iloc[0]
-            if verbose:
-                print(f"{label}: {score:.2f}")
-                print(data)
-                print('')
-                print('')
+        if type(self.data_frame) != type(None): 
+            df = self.data_frame
                 
-            lst.append({
-                "label": label,
-                "score": score,
-                "data": data 
-            })
+            sorted_indices = np.argsort(self.scores)[::-1]
+            lst = []
+            
+            for i in sorted_indices[:n]:
+                label = self.embedding_labels[i]
+                score = self.scores[i]
+                data = df[df[self.label_key]==self.embedding_labels[i]][self.data_key].iloc[0]
+                if verbose:
+                    print(f"{label}: {score:.2f}")
+                    
+                lst.append({
+                    "label": label,
+                    "score": score,
+                    "data": data 
+                })
+        else:
+            sorted_indices = np.argsort(self.scores)[::-1]
+            lst = []
+            
+            for i in sorted_indices[:n]:
+                label = self.embedding_labels[i]
+                score = self.scores[i]
+                if verbose:
+                    print(f"{label}: {score:.2f}")
+                    print('')
+                    print('')
+                    
+                lst.append({
+                    "label": label,
+                    "score": score,
+                    "data": '' 
+                })
         return lst
 
     #Mean Pooling - Take attention mask into account for correct averaging
-    def _mean_pooling(self,model_output, attention_mask):
-        token_embeddings = model_output.last_hidden_state
-        input_mask_expanded = tf.cast(tf.tile(tf.expand_dims(attention_mask, -1), [1, 1, token_embeddings.shape[-1]]), tf.float32)
-        return tf.math.reduce_sum(token_embeddings * input_mask_expanded, 1) / tf.math.maximum(tf.math.reduce_sum(input_mask_expanded, 1), 1e-9)
+    def _mean_pooling(self, model_output, attention_mask):
+        token_embeddings = model_output[0] #First element of model_output contains all token embeddings
+        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+
         
     #Default Encoder for text
     def _default_encoder(self,texts):
 
         # Tokenize sentences
-        encoded_input = self._default_tokenizer(texts, padding=True, truncation=True, return_tensors='tf')
-        
+        encoded_input = self._default_tokenizer(texts, padding=True, truncation=True, return_tensors='pt')
+    
         # Compute token embeddings
-        model_output = self._default_model(**encoded_input, return_dict=True)
-        
+        with torch.no_grad():
+            model_output = self._default_model(**encoded_input)
+    
         # Perform pooling
         embeddings = self._mean_pooling(model_output, encoded_input['attention_mask'])
-        
+    
         # Normalize embeddings
-        embeddings = tf.math.l2_normalize(embeddings, axis=1)
-        
+        embeddings = F.normalize(embeddings, p=2, dim=1)
+    
         return embeddings
     
-    def _saveEmbeddingChunks(self):
+    def _saveEmbeddingChunks(self, print_label):
         """
         """
         
@@ -158,7 +196,7 @@ class TextEmbeddings:
         block_counter = 0
         est_total_iterations = num_rows // self.block_size
         # Initialize tqdm with the total number of iterations
-        with tqdm.tqdm(total=est_total_iterations, desc="Saving Embeddings in Chunks") as pbar:
+        with tqdm.tqdm(total=est_total_iterations, desc=f"Saving {print_label} Embeddings in Chunks") as pbar:
         # Start your while loop
             while start_index < num_rows:
                 end_index = start_index + self.block_size if start_index + self.block_size < num_rows else num_rows
@@ -228,103 +266,11 @@ class TextEmbeddings:
         self.embedding_matrix = np.vstack(list_of_embeddings)
         self.embedding_labels = list_of_labels
 
-
-def example_main(example_query):
-    filename = '../../metadata_with_episode_dates_and_category.tsv'
-    CROP_SHOWS = 100 # for testing
-    block_size = 30  # see benchmarking
-    file = 'example_embeddings.pkl'
-    data_key='show_description'
-    label_key='show_name'
-    
-    try: 
-        df = pd.read_csv(filename,sep='\t')
-    except Exception as e1:
-        #print(e)
-        try: 
-            print("Attempt to pull from Google Drive")
-            id = "1guz7ILFUGLN2aYoXUez-K5ZCw0Xjo6m4"
-            download(id,filename)
-            df = pd.read_csv(filename,sep='\t')
-        except Exception as e2:
-            print("Fetch to Google Drive failed to download file.")
-            print(e1, e2)
-            exit()
-
-    # clean the data
-    df['release_date'] = pd.to_datetime(df['release_date'], format='%Y-%m-%d').reset_index(drop=True)
-    df = df[~df['release_date'].isna()]
-    df = df[~df['category'].isna()]
-    df = df[~df['show_description'].isna()]
-    df = df[~df['show_name'].isna()]
-    df = df[~df['episode_description'].isna()]
-    df = df[~df['episode_name'].isna()]
-
-    df_shows = df.drop_duplicates(['show_name','show_description'])[['show_name','show_description']].reset_index(drop=True)
-    df_example = df_shows.sample(CROP_SHOWS)
-
-
-    # delete file before generating things to make the example valid (i.e. no stale data somewhere)
-    try:
-        # Check if the file exists
-        if os.path.exists(file):
-            # Remove the file
-            os.remove(file)
-            print(f"File {file} deleted successfully.")
-        else:
-            print(f"File {file} does not exist. Continuing on my merry way.")
-    except Exception as e:
-        print(f"Error deleting file {file}: {e}")
-
-    
-    print("**************************************")
-    print("  Generate embeddings and then        ")
-    print("  Perform a comparison with a random  ")
-    print("  query.                              ")
-    print("**************************************")
-    start = time.time()
-    emb = TextEmbeddings()
-    emb.create_embeddings( df_example,
-                        data_key=data_key, 
-                        label_key=label_key, 
-                        block_size=block_size, 
-                        filename=file)
-    end = time.time()
-    print(f"{end-start} to Generate Embeddings.")
-    emb.compare(example_query)
-    print(f"Query: {example_query}")
-    print(f"Top Five Results:")
-    pprint.pprint(emb.get_top_n_scores(n=5))
-    
-    
-    print("**************************************")
-    print("  Now Try the same query comparison   ")
-    print("  Except pull the embeddings from     ")
-    print("  saved file, instead in memory data. ")
-    print("**************************************")
-    emb2 = TextEmbeddings()
-    emb2.load(file,df_example)
-    emb2.compare(example_query)
-    print(f"Query: {example_query}")
-    print(f"Top Five Results:")
-    pprint.pprint(emb2.get_top_n_scores(n=5))
-
 if __name__ == "__main__":
-    # TODO: add the following arguments to a parseargs: 
-    #       1. embedding location (if loading)
-    #       2. data set location (if generating)
-    #       3. flag to load data
-    #       4. flag to generate embeddings 
-    #
-    #  Create Embeddings
-    #  python embeddings.py --generate --dataset <filename> --datakey <key> --labelkey <key>
-    #  
-    #  Load embeddings from file and include dataset information
-    #  python embeddings.py --load <filename> --dataset <filename> --datakey <key> --labelkey <key>
-    #  
-    #  Load embeddings from file and query 
-    #  python embeddings.py --load <filename> --dataset <filename> --datakey <key> --labelkey <key> --query <some_string>
-    example_main("We are all in the matrix, so just swallow the pill will you?")
+    print('test')
+
+
+
     
     
     
